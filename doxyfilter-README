@@ -1,0 +1,64 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+binmode STDIN, ':utf8';
+binmode STDOUT, ':utf8';
+binmode STDERR, ':utf8';
+
+use Pod::Usage;
+use File::Basename;
+
+if ( $#ARGV == -1 ) { 
+	pod2usage(-verbose => 1);	
+}
+
+my $content = "";
+my $path = dirname($ARGV[0]);
+$path =~ s/\/\//\//g;
+my @dir = split(/\//, $path);
+my $name = $dir[$#dir-1].'_'.$dir[$#dir];
+$name =~ s/[ \/]/_/g;
+my $title = dirname($ARGV[0]);
+my $type = "page";
+
+open(my $fh, "<", $ARGV[0]);
+while (<$fh>) {
+	chomp;
+	if ( /^NAME: (.*)/ ) {
+		$name = $1;
+		next;
+	}
+
+	if ( /^TITLE: (.*)/ ) {
+		$title = $1;
+		next;
+	}
+
+	if ( /^TYPE: (.*)/ ) { 
+		$type = $1;
+		next;
+	}
+	$content .= $_."\n";
+}
+close($fh);
+
+print "/**\n";
+print "\\$type $name $title\n";
+print $content;
+print "*/\n";
+
+
+=head1 NAME
+
+./doxyfilter-bash.pl file
+
+=head1 SYNOPSIS
+
+Modifies bash input to bo compatible with doxygen.
+
+Replaces ## to //.
+
+=cut
+
+
