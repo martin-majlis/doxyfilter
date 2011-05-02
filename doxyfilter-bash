@@ -14,9 +14,16 @@ if ( $#ARGV == -1 ) {
 
 open(my $fh, "<", $ARGV[0]);
 while (<$fh>) {
-	s/^###/\/\/\/ \\file $ARGV[0]\n\/\/\/ \\brief /;
-	s/^##/\/\/\//;
-	print;
+ 	if ( /^\s*if / || /^\s*fi/ ) { 
+		next;
+	} elsif ( /function / ) {
+		s/function ([^ {\n]+)/function $1 ()/;
+		print;		
+	} else {
+		s/^###/\/\/\/ \\file $ARGV[0]\n\/\/\/ \\brief /;
+		s/^##/\/\/\//;
+		print;
+	}
 }
 close($fh);
 
