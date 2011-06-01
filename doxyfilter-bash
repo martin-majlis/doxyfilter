@@ -12,17 +12,39 @@ if ( $#ARGV == -1 ) {
 	pod2usage(-verbose => 1);	
 }
 
+my $keepLine=1;
+my $cleanEmptyLine=0;
 open(my $fh, "<", $ARGV[0]);
 while (<$fh>) {
- 	if ( /^\s*if / || /^\s*fi/ ) { 
-		next;
-	} elsif ( /function / ) {
+ 	if ( /function / ) {
 		s/function ([^ {\n]+)/function $1 ()/;
 		print;		
 	} else {
-		s/^###/\/\/\/ \\file $ARGV[0]\n\/\/\/ \\brief /;
-		s/^##/\/\/\//;
-		print;
+		if ( /##/ ) { 
+			$keepLine = 2;
+		}
+		if ( /^[}{]/ ) { 
+			$keepLine = 1;
+		}
+		
+		if ( /^###/ ) {
+			s/^###/\/\/\/ \\file $ARGV[0]\n\/\/\/ \\brief /;
+			$cleanEmptyLine++;
+		}
+		
+		s/^##US(.*)/##$1\\n/;
+		s/^##/\/\/\//;		
+		
+		if ( $keepLine > 0 ) { 
+			print;
+		} else { 
+			if ( $cleanEmptyLine == 0 ) {
+				print "\n";
+			} else { 
+				$cleanEmptyLine--;
+			}
+		}
+		$keepLine--;
 	}
 }
 close($fh);
